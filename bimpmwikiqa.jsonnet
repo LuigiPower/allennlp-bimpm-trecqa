@@ -1,10 +1,6 @@
 {
   "dataset_reader": {
     "type": "wikiqa",
-    "lazy": false,
-    "tokenizer": {
-      "type": "just_spaces"
-    },
     "token_indexers": {
       "tokens": {
         "type": "single_id",

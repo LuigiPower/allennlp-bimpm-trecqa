@@ -33,148 +33,149 @@ from allennlp.predictors import SentenceTaggerPredictor
 
 torch.manual_seed(1)
 
-class PosDatasetReader(DatasetReader):
-    """
-    DatasetReader for PoS tagging data, one sentence per line, like
+if __name__ == '__main__':
+    class PosDatasetReader(DatasetReader):
+        """
+        DatasetReader for PoS tagging data, one sentence per line, like
 
-        The###DET dog###NN ate###V the###DET apple###NN
-    """
+            The###DET dog###NN ate###V the###DET apple###NN
+        """
 
-    def __init__(self, token_indexers: Dict[str, TokenIndexer] = None) -> None:
-        super().__init__(lazy=False)
-        self.token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
+        def __init__(self, token_indexers: Dict[str, TokenIndexer] = None) -> None:
+            super().__init__(lazy=False)
+            self.token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
 
-    def text_to_instance(self, tokens: List[Token], tags: List[str] = None) -> Instance:
-        sentence_field = TextField(tokens, self.token_indexers)
-        fields = {"sentence": sentence_field}
+        def text_to_instance(self, tokens: List[Token], tags: List[str] = None) -> Instance:
+            sentence_field = TextField(tokens, self.token_indexers)
+            fields = {"sentence": sentence_field}
 
-        if tags:
-            label_field = SequenceLabelField(labels=tags, sequence_field=sentence_field)
-            fields["labels"] = label_field
+            if tags:
+                label_field = SequenceLabelField(labels=tags, sequence_field=sentence_field)
+                fields["labels"] = label_field
 
-        return Instance(fields)
+            return Instance(fields)
 
-    def _read(self, file_path: str) -> Iterator[Instance]:
-        with open(file_path) as f:
-            for line in f:
-                pairs = line.strip().split()
-                sentence, tags = zip(*(pair.split("###") for pair in pairs))
-                yield self.text_to_instance([Token(word) for word in sentence], tags)
+        def _read(self, file_path: str) -> Iterator[Instance]:
+            with open(file_path) as f:
+                for line in f:
+                    pairs = line.strip().split()
+                    sentence, tags = zip(*(pair.split("###") for pair in pairs))
+                    yield self.text_to_instance([Token(word) for word in sentence], tags)
 
-class LstmTagger(Model):
+    class LstmTagger(Model):
 
-    def __init__(self,
+        def __init__(self,
 
-                 word_embeddings: TextFieldEmbedder,
+                    word_embeddings: TextFieldEmbedder,
 
-                 encoder: Seq2SeqEncoder,
+                    encoder: Seq2SeqEncoder,
 
-                 vocab: Vocabulary) -> None:
+                    vocab: Vocabulary) -> None:
 
-        super().__init__(vocab)
-        self.word_embeddings = word_embeddings
-        self.encoder = encoder
+            super().__init__(vocab)
+            self.word_embeddings = word_embeddings
+            self.encoder = encoder
 
-        self.hidden2tag = torch.nn.Linear(in_features=encoder.get_output_dim(),
-                                          out_features=vocab.get_vocab_size('labels'))
+            self.hidden2tag = torch.nn.Linear(in_features=encoder.get_output_dim(),
+                                            out_features=vocab.get_vocab_size('labels'))
 
-        self.accuracy = CategoricalAccuracy()
+            self.accuracy = CategoricalAccuracy()
 
-    def forward(self,
-                sentence: Dict[str, torch.Tensor],
-                labels: torch.Tensor = None) -> Dict[str, torch.Tensor]:
+        def forward(self,
+                    sentence: Dict[str, torch.Tensor],
+                    labels: torch.Tensor = None) -> Dict[str, torch.Tensor]:
 
-        mask = get_text_field_mask(sentence)
+            mask = get_text_field_mask(sentence)
 
-        embeddings = self.word_embeddings(sentence)
+            embeddings = self.word_embeddings(sentence)
 
-        encoder_out = self.encoder(embeddings, mask)
+            encoder_out = self.encoder(embeddings, mask)
 
-        tag_logits = self.hidden2tag(encoder_out)
-        output = {"tag_logits": tag_logits}
+            tag_logits = self.hidden2tag(encoder_out)
+            output = {"tag_logits": tag_logits}
 
-        if labels is not None:
-            self.accuracy(tag_logits, labels, mask)
-            output["loss"] = sequence_cross_entropy_with_logits(tag_logits, labels, mask)
+            if labels is not None:
+                self.accuracy(tag_logits, labels, mask)
+                output["loss"] = sequence_cross_entropy_with_logits(tag_logits, labels, mask)
 
-        return output
+            return output
 
-    def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        return {"accuracy": self.accuracy.get_metric(reset)}
+        def get_metrics(self, reset: bool = False) -> Dict[str, float]:
+            return {"accuracy": self.accuracy.get_metric(reset)}
 
-reader = PosDatasetReader()
+    reader = PosDatasetReader()
 
-train_dataset = reader.read(cached_path(
-    'https://raw.githubusercontent.com/allenai/allennlp'
-    '/master/tutorials/tagger/training.txt'))
-validation_dataset = reader.read(cached_path(
-    'https://raw.githubusercontent.com/allenai/allennlp'
-    '/master/tutorials/tagger/validation.txt'))
+    train_dataset = reader.read(cached_path(
+        'https://raw.githubusercontent.com/allenai/allennlp'
+        '/master/tutorials/tagger/training.txt'))
+    validation_dataset = reader.read(cached_path(
+        'https://raw.githubusercontent.com/allenai/allennlp'
+        '/master/tutorials/tagger/validation.txt'))
 
-vocab = Vocabulary.from_instances(train_dataset + validation_dataset)
+    vocab = Vocabulary.from_instances(train_dataset + validation_dataset)
 
-EMBEDDING_DIM = 6
-HIDDEN_DIM = 6
+    EMBEDDING_DIM = 6
+    HIDDEN_DIM = 6
 
-token_embedding = Embedding(num_embeddings=vocab.get_vocab_size('tokens'),
-                            embedding_dim=EMBEDDING_DIM)
-word_embeddings = BasicTextFieldEmbedder({"tokens": token_embedding})
+    token_embedding = Embedding(num_embeddings=vocab.get_vocab_size('tokens'),
+                                embedding_dim=EMBEDDING_DIM)
+    word_embeddings = BasicTextFieldEmbedder({"tokens": token_embedding})
 
-lstm = PytorchSeq2SeqWrapper(torch.nn.LSTM(EMBEDDING_DIM, HIDDEN_DIM, batch_first=True))
+    lstm = PytorchSeq2SeqWrapper(torch.nn.LSTM(EMBEDDING_DIM, HIDDEN_DIM, batch_first=True))
 
-model = LstmTagger(word_embeddings, lstm, vocab)
+    model = LstmTagger(word_embeddings, lstm, vocab)
 
-if torch.cuda.is_available():
-    cuda_device = 0
+    if torch.cuda.is_available():
+        cuda_device = 0
 
-    model = model.cuda(cuda_device)
-else:
+        model = model.cuda(cuda_device)
+    else:
 
-    cuda_device = -1
+        cuda_device = -1
 
-optimizer = optim.SGD(model.parameters(), lr=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=0.1)
 
-iterator = BucketIterator(batch_size=2, sorting_keys=[("sentence", "num_tokens")])
+    iterator = BucketIterator(batch_size=2, sorting_keys=[("sentence", "num_tokens")])
 
-iterator.index_with(vocab)
+    iterator.index_with(vocab)
 
-trainer = Trainer(model=model,
-                  optimizer=optimizer,
-                  iterator=iterator,
-                  train_dataset=train_dataset,
-                  validation_dataset=validation_dataset,
-                  patience=10,
-                  num_epochs=1000,
-                  cuda_device=cuda_device)
+    trainer = Trainer(model=model,
+                    optimizer=optimizer,
+                    iterator=iterator,
+                    train_dataset=train_dataset,
+                    validation_dataset=validation_dataset,
+                    patience=10,
+                    num_epochs=1000,
+                    cuda_device=cuda_device)
 
-trainer.train()
+    trainer.train()
 
-predictor = SentenceTaggerPredictor(model, dataset_reader=reader)
+    predictor = SentenceTaggerPredictor(model, dataset_reader=reader)
 
-tag_logits = predictor.predict("The dog ate the apple")['tag_logits']
+    tag_logits = predictor.predict("The dog ate the apple")['tag_logits']
 
-tag_ids = np.argmax(tag_logits, axis=-1)
+    tag_ids = np.argmax(tag_logits, axis=-1)
 
-print([model.vocab.get_token_from_index(i, 'labels') for i in tag_ids])
+    print([model.vocab.get_token_from_index(i, 'labels') for i in tag_ids])
 
-# Here's how to save the model.
-with open("/tmp/model.th", 'wb') as f:
-    torch.save(model.state_dict(), f)
+    # Here's how to save the model.
+    with open("/tmp/model.th", 'wb') as f:
+        torch.save(model.state_dict(), f)
 
-vocab.save_to_files("/tmp/vocabulary")
+    vocab.save_to_files("/tmp/vocabulary")
 
-# And here's how to reload the model.
-vocab2 = Vocabulary.from_files("/tmp/vocabulary")
+    # And here's how to reload the model.
+    vocab2 = Vocabulary.from_files("/tmp/vocabulary")
 
-model2 = LstmTagger(word_embeddings, lstm, vocab2)
+    model2 = LstmTagger(word_embeddings, lstm, vocab2)
 
-with open("/tmp/model.th", 'rb') as f:
-    model2.load_state_dict(torch.load(f))
+    with open("/tmp/model.th", 'rb') as f:
+        model2.load_state_dict(torch.load(f))
 
-if cuda_device > -1:
-    model2.cuda(cuda_device)
+    if cuda_device > -1:
+        model2.cuda(cuda_device)
 
-predictor2 = SentenceTaggerPredictor(model2, dataset_reader=reader)
-tag_logits2 = predictor2.predict("The dog ate the apple")['tag_logits']
-np.testing.assert_array_almost_equal(tag_logits2, tag_logits)
+    predictor2 = SentenceTaggerPredictor(model2, dataset_reader=reader)
+    tag_logits2 = predictor2.predict("The dog ate the apple")['tag_logits']
+    np.testing.assert_array_almost_equal(tag_logits2, tag_logits)
 

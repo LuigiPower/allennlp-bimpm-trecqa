@@ -37,16 +37,17 @@ from allennlp.nn import Activation
 
 torch.manual_seed(1)
 
-vocab2 = Vocabulary.from_files("./wikiqavucabulary")
+if __name__ == '__main__':
+    vocab2 = Vocabulary.from_files("./wikiqavucabulary")
 
-model2 = LstmTagger(word_embeddings, esim, vocab2)
+    model2 = LstmTagger(word_embeddings, esim, vocab2)
 
-with open("./wikiqamodel.th", 'rb') as f:
-    model2.load_state_dict(torch.load(f))
+    with open("./wikiqamodel.th", 'rb') as f:
+        model2.load_state_dict(torch.load(f))
 
-if cuda_device > -1:
-    model2.cuda(cuda_device)
+    if cuda_device > -1:
+        model2.cuda(cuda_device)
 
-predictor2 = SentenceTaggerPredictor(model2, dataset_reader=reader)
-tag_logits2 = predictor2.predict("The dog ate the apple")['tag_logits']
-np.testing.assert_array_almost_equal(tag_logits2, tag_logits)
+    predictor2 = SentenceTaggerPredictor(model2, dataset_reader=reader)
+    tag_logits2 = predictor2.predict("The dog ate the apple")['tag_logits']
+    np.testing.assert_array_almost_equal(tag_logits2, tag_logits)

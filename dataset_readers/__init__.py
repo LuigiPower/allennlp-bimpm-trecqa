@@ -1,2 +1,2 @@
 
-from wikiqa_reader import WikiQADatasetReader
+from .wikiqa_reader import WikiQADatasetReader
