@@ -11,8 +11,8 @@
       }
     }
   },
-  "train_data_path": "/Users/federicogiuggioloni/Projects/qa-allennlp/WikiQACorpus/WikiQA-train.tsv",
-  "validation_data_path": "/Users/federicogiuggioloni/Projects/qa-allennlp/WikiQACorpus/WikiQA-test.tsv",
+  "train_data_path": "/mnt/c/Users/Federico/Documents/Projects/allennlp-experiments/WikiQACorpus/WikiQA-train.tsv",
+  "validation_data_path": "/mnt/c/Users/Federico/Documents/Projects/allennlp-experiments/WikiQACorpus/WikiQA-test.tsv",
   "model": {
     "type": "bimpm",
     "dropout": 0.1,
