@@ -20,24 +20,6 @@ python wikiqatrain_esim.py
 
 ## ESIM
 
-# Evaluating BIMPM and ESIM models implemented in the AllenNLP
-
-# open source NLP research library
-
-## FEDERICO GIUGGIOLONI 189662,University of Trento, federico.giuggioloni@studenti.unitn.it
-
-```
-AllenNLP is an open source library which was made for research purposes.
-It provides state of the art model implementations and tools to simplify deep learning for Natural Language Processing
-problems.
-General Terms: AllenNLP, BIMPM, ESIM
-```
-Additional Key Words and Phrases: Natural language processing, TrecQA, WikiQA
-
-```
-Federico Giuggioloni 189662. 2020. Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP
-research library.
-```
 ## 1 INTRODUCTION
 
 ## 1.1 AllenNLP
