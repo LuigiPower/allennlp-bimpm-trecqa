@@ -1,13 +1,13 @@
 # How to run
 
 ## BimPM
-Running the training and validation process requires a reference to the jsonnet le, the directory in which
-to store the metrics and trained models for each epoch. e–include-packageargument is required to make
+Running the training and validation process requires a reference to the jsonnet file, the directory in which
+to store the metrics and trained models for each epoch. the -–include-package argument is required to make
 AllenNLP load custom models and dataset readers, which it will detect thanks to theregisterdecorator.
 
 ```
-allennlp train -s trecqaoutdir --include -package workdir bimpmtrecqa.jsonnet
-allennlp train -s wikiqaoutdir --include -package workdir bimpmwikiqa.jsonnet
+allennlp train -s trecqaoutdir --include-package allennlp-bimpm-trecqa bimpmtrecqa.jsonnet
+allennlp train -s wikiqaoutdir --include-package allennlp-bimpm-trecqa bimpmwikiqa.jsonnet
 ```
 
 ## ESIM
@@ -56,10 +56,10 @@ overriding methods dened in the AllenNLP Model class.
 Dataset ReaderAllenNLP needs to understand the dataset it’s going to use for training and/or validation.
 ere are two ways to effectively execute a full training/validation run:
 - Training script: Write a Python script which initializes all the previously described objects in addition to
-loading the data (either from le or from an URL) and creates a Trainer instance which takes care of
+loading the data (either from file or from an URL) and creates a Trainer instance which takes care of
 running the model.
 - JSONNET: Specify the model, dataset reader, trainer and all required parameters in a single JSONNET
-le. is method requires no code if the Dataset reader and Model are already implemented, which makes
+file. is method requires no code if the Dataset reader and Model are already implemented, which makes
 it easy to congure and run.
 
 ## 2 READING THE DATASET
@@ -93,7 +93,7 @@ fields["label"] = LabelField(int(correct), skip_indexing=True)
 ```
 ```
 return Instance(fields)
-To be able to use a custom Dataset Reader in both a JSONNET le or a training script, the reader must be
+To be able to use a custom Dataset Reader in both a JSONNET file or a training script, the reader must be
 registered with a name using an AllenNLP decorator:
 ```
 ```
@@ -192,7 +192,7 @@ yield self.text_to_instance ([ Token(word) for word in question],
 
 ## 3.1 BimPM
 
-BimPM was run by using a jsonnet le. Note the dataset reader type which contains the name of the previously
+BimPM was run by using a jsonnet file. Note the dataset reader type which contains the name of the previously
 created dataset readers.
 
 ```
@@ -332,7 +332,7 @@ datasets/glove/glove.840B.300d.txt.gz",
 
 ```
 
-Running the training and validation process requires a reference to the jsonnet le, the directory in which
+Running the training and validation process requires a reference to the jsonnet file, the directory in which
 to store the metrics and trained models for each epoch. e–include-packageargument is required to make
 AllenNLP load custom models and dataset readers, which it will detect thanks to theregisterdecorator.
 
