@@ -3,7 +3,7 @@
 ## BimPM
 Running the training and validation process requires a reference to the jsonnet file, the directory in which
 to store the metrics and trained models for each epoch. the -–include-package argument is required to make
-AllenNLP load custom models and dataset readers, which it will detect thanks to theregisterdecorator.
+AllenNLP load custom models and dataset readers, which it will detect thanks to the register decorator.
 
 ```
 allennlp train -s trecqaoutdir --include-package allennlp-bimpm-trecqa bimpmtrecqa.jsonnet
