@@ -1,4 +1,24 @@
-# 1
+# How to run
+
+## BimPM
+Running the training and validation process requires a reference to the jsonnet le, the directory in which
+to store the metrics and trained models for each epoch. e–include-packageargument is required to make
+AllenNLP load custom models and dataset readers, which it will detect thanks to theregisterdecorator.
+
+```
+allennlp train -s trecqaoutdir --include -package workdir bimpmtrecqa.jsonnet
+allennlp train -s wikiqaoutdir --include -package workdir bimpmwikiqa.jsonnet
+```
+
+## ESIM
+Modify the training script with the correct paths for the training and test datasets then run it
+
+```
+python trecqatrain_esim.py
+python wikiqatrain_esim.py
+```
+
+## ESIM
 
 # Evaluating BIMPM and ESIM models implemented in the AllenNLP
 
@@ -22,38 +42,31 @@ research library.
 
 ## 1.1 AllenNLP
 
-AllenNLP is a research library built on PyTorch that simplies development of deep-learning models for Natural
+AllenNLP is a research library built on PyTorch that simplies development of deep-learning models for Natural
 Language Processing tasks.
 It is comprised of two packages:
-allennlpContains all that is necessary for the development of a new model and JSONNET support.
-allennlp-modelsWhich hold all pre-implemented models and correspondingjsonnetsample les.
-AllenNLP has been developed mostly for UNIX platforms, as on Windows the installation of thejsonnetand
-allennlp-modelspackages fail. e main runtime still works, only the more advanced features ofjsonnetare
+- allennlp: Contains all that is necessary for the development of a new model and JSONNET support.
+- allennlp-models: Which hold all pre-implemented models and corresponding jsonnet samples. AllenNLP has been developed mostly for UNIX platforms, 
+as on Windows the installation of jsonnet and allennlp-models packages fail the main runtime still works, only the more advanced features of jsonnet are
 disabled (they will be considered plain JSON) and the pre-implemented models won’t be available unless a manual
 installation is performed.
 Implementing and running a model requires at least the following components:
-Modele model to run. It contains the deep network specication as it would be wrien in PyTorch, by
-overriding methods dened in the AllenNLP Model class.
+- Model: model to run. It contains the deep network specication as it would be written in PyTorch, by
+overriding methods dened in the AllenNLP Model class.
 Dataset ReaderAllenNLP needs to understand the dataset it’s going to use for training and/or validation.
-ere are two ways to eectively execute a full training/validation run:
-Training scriptWrite a Python script which initializes all the previously described objects in addition to
-loading the data (either from le or from an URL) and creates a Trainer instance which takes care of
+ere are two ways to effectively execute a full training/validation run:
+- Training script: Write a Python script which initializes all the previously described objects in addition to
+loading the data (either from le or from an URL) and creates a Trainer instance which takes care of
 running the model.
-JSONNET leSpecify the model, dataset reader, trainer and all required parameters in a single JSONNET
-le. is method requires no code if the Dataset reader and Model are already implemented, which makes
-it easy to congure and run.
-
-©2020 Copyright held by the owner/author(s). 1936-1955/2020/1-ART
-DOI: 0000001.
-
-
-1:2 • F. Giuggioloni
+- JSONNET: Specify the model, dataset reader, trainer and all required parameters in a single JSONNET
+le. is method requires no code if the Dataset reader and Model are already implemented, which makes
+it easy to congure and run.
 
 ## 2 READING THE DATASET
 
 ## 2.1 Basic DatasetReader implementation
 
-eDatasetReaderclass provided by AllenNLP has areadmethod which must be overridden for the reader to
+eDatasetReaderclass provided by AllenNLP has areadmethod which must be overridden for the reader to
 work.
 
 ```
@@ -64,7 +77,7 @@ with open(file_path , encoding="utf -8") as f:
 # Whenever an instance has been fully read , build and return it
 yield self.text_to_instance (...)
 Each Instance is a Sample that will be used for training, so it is initialized by passing a dictionary with three
-keys: apremise, anhypothesisand alabelwhich species whether this answer is correct for the question.
+keys: apremise, anhypothesisand alabelwhich species whether this answer is correct for the question.
 ```
 ```
 Listing 2. Dataset reader
@@ -80,13 +93,13 @@ fields["label"] = LabelField(int(correct), skip_indexing=True)
 ```
 ```
 return Instance(fields)
-To be able to use a custom Dataset Reader in both a JSONNET le or a training script, the reader must be
+To be able to use a custom Dataset Reader in both a JSONNET le or a training script, the reader must be
 registered with a name using an AllenNLP decorator:
 ```
 ```
 Listing 3. Dataset reader
 @DatasetReader.register("datasetreadername")
-e dataset readers for TrecQA and WikiQA will be built by using thistexttoinstancemethod and by overriding
+the dataset readers for TrecQA and WikiQA will be built by using thistexttoinstancemethod and by overriding
 read.
 ```
 ## 2.2 TrecQA
@@ -101,12 +114,10 @@ What ethnic group / race are Crip members?
 WP JJ NN IN NN VBP JJ NNS.
 VMOD NMOD NMOD NMOD PMOD ROOT NMOD PRD P
 6 3 1 1 4 0 8 6 6
+- - PER_DESC -B - PER_DESC -B - ORGANIZATION -B PER_DESC -B -
 ```
 
-```
-Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
-```
-### - - PER_DESC -B - PER_DESC -B - ORGANIZATION -B PER_DESC -B -
+### Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
 
 ```
 </question >
@@ -115,11 +126,12 @@ Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP res
 `` IN PRP VBD PRP , PRP VB PRP , '' CD NNP VBD.
 P VMOD SUB SBAR OBJ P SUB VMOD OBJ P P NMOD SUB ROOT P
 14 8 4 2 4 8 8 14 8 14 14 13 14 0 14
-```
 - - - - - - - - - - - - PERSON -B - -
 </negative >
 </QApairs >
-Each question is delimited by aQApairselement, inside which there will always only be onequestionand
+```
+
+Each question is delimited by a QApairs element, inside which there will always only be onequestionand
 multiple answers, which are either labelednegativeorpositive.
 Using an XML parser we can extract these elements and construct the required instances:
 
@@ -158,18 +170,12 @@ WikiQA contains the estion and Answer pairs in the following tsv format:
 ```
 Listing 6. Dataset sample
 QuestionID \\ tQuestion \\ tDocumentID \\ tDocumentTitle \\ tSentenceID \\ tSentence \\ tLabel
-```
-
-```
-1:4 • F. Giuggioloni
-```
-```
 Q1 question D1 document_title D1 -0 answer 0
 ```
-```
+
 In this case the data is a simple TSV, in which the label is on the last column and assumes the value of ’1’ for
-correct answers. Spliing each line by the tabulation character, we can extract all the required information:
-```
+correct answers. Splitting each line by the tabulation character, we can extract all the required information:
+
 ```
 Listing 7. Dataset reader
 def _read(self , file_path: str) -> Iterator[Instance ]:
@@ -186,11 +192,11 @@ yield self.text_to_instance ([ Token(word) for word in question],
 
 ## 3.1 BimPM
 
-```
-BimPM was run by using a jsonnet le. Note the dataset reader type which contains the name of the previously
+BimPM was run by using a jsonnet le. Note the dataset reader type which contains the name of the previously
 created dataset readers.
+
 ```
-Listing 8. Bimpm jsonnet file
+Bimpm jsonnet file
 1 {
 2 "dataset_reader": {
 3 "type": "trecqa", // or "wikiqa"
@@ -213,10 +219,10 @@ Listing 8. Bimpm jsonnet file
 20 "token_embedders": {
 21 "tokens": {
 22 "type": "embedding",
-
-
 ```
-Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
+
+### Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
+
 ```
 23 "pretrained_file": "https:// allennlp.s3.amazonaws.com/
 datasets/glove/glove.840B.300d.txt.gz",
@@ -264,10 +270,8 @@ datasets/glove/glove.840B.300d.txt.gz",
 65 },
 66 "encoder2": {
 67 "type": "lstm",
-
-
 ```
-1:6 • F. Giuggioloni
+
 ```
 68 "bidirectional": true,
 69 "input_size": 400,
@@ -315,10 +319,10 @@ datasets/glove/glove.840B.300d.txt.gz",
 111 "grad_clipping": 5.0,
 112 "validation_metric": "+ accuracy",
 113 "optimizer": {
-
-
 ```
-Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
+
+### Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
+
 ```
 114 "type": "adam",
 115 "lr": 0.
@@ -327,10 +331,11 @@ Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP res
 118 }
 
 ```
-Running the training and validation process requires a reference to the jsonnet le, the directory in which
-to store the metrics and trained models for each epoch. e–include-packageargument is required to make
+
+Running the training and validation process requires a reference to the jsonnet le, the directory in which
+to store the metrics and trained models for each epoch. e–include-packageargument is required to make
 AllenNLP load custom models and dataset readers, which it will detect thanks to theregisterdecorator.
-```
+
 ```
 Listing 9. Bimpm jsonnet file
 allennlp train -s trecqaoutdir --include -package workdir bimpmtrecqa.jsonnet
@@ -338,23 +343,21 @@ allennlp train -s wikiqaoutdir --include -package workdir bimpmwikiqa.jsonnet
 ```
 ## 3.2 ESIM
 
-```
 ESIM was run by creating a dedicated python script.
-e rst step is reading the input les through the Dataset Reader. In this case the reader is loaded by directly
+the first step is reading the input les through the Dataset Reader. In this case the reader is loaded by directly
 instantiating the required class, not by using it’s registered name.
-```
+
 ```
 Listing 10. Dataset initialization
 reader = TrecQADatasetReader () # Or WikiQADatasetReader
-```
-```
+
 train_dataset = reader.read(cached_path(path_to_training_file ))
 validation_dataset = reader.read(cached_path(path_to_validation_file ))
-```
-```
+
 vocab = Vocabulary.from_instances(train_dataset + validation_dataset)
-e next step is the initialization of the Model itself. ESIM is the model taken from theallennlp-modelslibrary.
+the next step is the initialization of the Model itself. ESIM is the model taken from the allennlp-models library.
 ```
+
 ```
 Listing 11. Model initialization
 lstm = PytorchSeq2SeqWrapper(torch.nn.LSTM(EMBEDDING_DIM ,
@@ -363,34 +366,23 @@ batch_first=True))
 inference = PytorchSeq2SeqWrapper(torch.nn.LSTM(EMBEDDING_DIM ,
 HIDDEN_DIM ,
 batch_first=True))
-```
-```
+
 encoder_dim = word_embeddings.get_output_dim ()
-```
-```
+
 projection_feedforward = FeedForward(
 encoder_dim * 4, 1, inference.get_input_dim (), Activation.by_name("elu")()
 )
-```
-```
-# (batch_size , model_dim * 2 * 4)
+
+(batch_size , model_dim * 2 * 4)
 output_feedforward = FeedForward(
-```
-
-1:8 • F. Giuggioloni
-
-```
 lstm.get_output_dim () * 4, 1, 2, Activation.by_name("elu")()
 )
-```
-```
+
 output_logit = torch.nn.Linear(in_features =2,
 out_features =2)
-```
-```
+
 simfunc = BilinearAttention(encoder_dim , encoder_dim)
-```
-```
+
 model = ESIM(vocab=vocab ,
 text_field_embedder=word_embeddings ,
 encoder=lstm ,
@@ -400,10 +392,10 @@ projection_feedforward=projection_feedforward ,
 output_feedforward=output_feedforward ,
 output_logit=output_logit)
 ```
-```
-e nal step is the creation of the Trainer instance, in this case a GradientDescentTrainer using the AdamOp-
+
+the final step is the creation of the Trainer instance, in this case a GradientDescentTrainer using the AdamOp-
 timizer.
-```
+
 ```
 Listing 12. Training
 def build_trainer(
@@ -429,19 +421,18 @@ patience =
 return trainer
 ```
 
-Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
+### Evaluating BIMPM and ESIM models implemented in the AllenNLP open source NLP research library • 1:
 
-e training loop is started by simply callingtrainon the resulting instance.builddataloadersis a function
+the training loop is started by simply callingtrainon the resulting instance.builddataloadersis a function
 that wraps the datasets in a PyTorchDataLoader, which takes care of shuing and managing the batch size.
 
 ```
 Listing 13. Training
 train_dataset.index_with(vocab)
 validation_dataset.index_with(vocab)
-```
-```
+
 train_loader , val_loader = build_data_loaders(train_dataset , validation_dataset)
-```
+
 trainer = build_trainer(
 model ,
 'outputfolder',
@@ -449,13 +440,9 @@ train_loader ,
 val_loader
 )
 
-```
 trainer.train ()
 ```
 
-```
-1:10 • F. Giuggioloni
-```
 ## 4 VALIDATION
 
 ```
