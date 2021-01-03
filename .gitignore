@@ -153,3 +153,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+allennlp-master/
+
+allennlp-models/

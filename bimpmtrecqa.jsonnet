@@ -11,8 +11,8 @@
       }
     }
   },
-  "train_data_path": "/Users/federicogiuggioloni/Projects/qa-allennlp/trecQAData/TRAIN-ALL.xml",
-  "validation_data_path": "/Users/federicogiuggioloni/Projects/qa-allennlp/trecQAData/TEST.xml",
+  "train_data_path": "/mnt/c/Users/Federico/Documents/Projects/allennlp-experiments/trecQAData/TRAIN.xml",
+  "validation_data_path": "/mnt/c/Users/Federico/Documents/Projects/allennlp-experiments/trecQAData/TEST.xml",
   "model": {
     "type": "bimpm",
     "dropout": 0.1,
